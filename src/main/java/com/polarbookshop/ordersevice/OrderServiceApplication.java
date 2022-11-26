@@ -2,12 +2,14 @@ package com.polarbookshop.ordersevice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 
 @SpringBootApplication
-public class OrderSeviceApplication {
+@ConfigurationPropertiesScan
+public class OrderServiceApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(OrderSeviceApplication.class, args);
+        SpringApplication.run(OrderServiceApplication.class, args);
     }
 
 }

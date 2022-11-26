@@ -1,5 +1,7 @@
 package com.polarbookshop.ordersevice.domain;
 
+import com.polarbookshop.ordersevice.book.Book;
+import com.polarbookshop.ordersevice.book.BookClient;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -8,9 +10,12 @@ import reactor.core.publisher.Mono;
 public class OrderService {
 
     private  final OrderRepository orderRepository;
+    private final BookClient bookClient;
 
-    public OrderService(OrderRepository orderRepository) {
+    public OrderService(OrderRepository orderRepository,
+                        BookClient bookClient) {
         this.orderRepository = orderRepository;
+        this.bookClient = bookClient;
     }
 
     public Flux<Order> getAllOrders() {
@@ -18,9 +23,18 @@ public class OrderService {
     }
 
     public Mono<Order> submitOrder(String isbn, int quantity) {
-        return Mono.just(buildRejectedOrder(isbn, quantity))
+        return bookClient.getBookByIsbn(isbn)
+                .map(book -> buildAcceptedOrder(book, quantity))
+                .defaultIfEmpty(
+                        buildRejectedOrder(isbn, quantity))
                 .flatMap(orderRepository::save);
     }
+
+    public static Order buildAcceptedOrder(Book book, int quantity) {
+        return Order.of(book.isbn(), book.title() + " - " + book.author(),
+                book.price(), quantity, OrderStatus.ACCEPTED);
+    }
+
     public static Order buildRejectedOrder(String bookIsbn, int quantity) {
         return Order.of(bookIsbn, null, null, quantity, OrderStatus.REJECTED);
     }
